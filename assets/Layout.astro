@@ -1,0 +1,180 @@
+---
+/**
+ * Layout.astro — the single owner of <head>.
+ *
+ * Every page in the site passes through this file. Never add head tags inside a
+ * page or a section: if something belongs in the head, add a prop here instead.
+ * That is what keeps the SEO audit passing on every route.
+ *
+ * Setup checklist when copying this into a new project:
+ *   1. Set `site` in astro.config.mjs — canonical and hreflang derive from it.
+ *   2. Replace SITE_NAME, DEFAULT_TITLE, DEFAULT_DESCRIPTION, DEFAULT_OG_IMAGE.
+ *   3. Single-language site? Delete the LOCALES const and the hreflang block.
+ *   4. No dark mode? Delete the theme script and the :root.dark rules.
+ *   5. Point the preconnect at your real image CDN, or delete it.
+ */
+import { Font } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
+import Navbar from '../components/layout/Navbar.astro';
+import Footer from '../components/layout/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  /** 30–60 chars, primary keyword first, brand last. Required on every page. */
+  title?: string;
+  /** 70–160 chars, written to earn the click. Required on every page. */
+  description?: string;
+  /** Absolute or root-relative URL to a 1200×630 social image. */
+  ogImage?: string;
+  /** Structured data object, serialized into a ld+json script tag. */
+  jsonLd?: object;
+  /** Keep legacy or duplicate routes out of the index. */
+  noindex?: boolean;
+  /**
+   * Explicit hreflang set. Leave `undefined` to derive it by swapping the
+   * language segment (correct when locales share a path shape). Pass `null`
+   * when no translation exists — an hreflang pointing at a 404 is worse than
+   * none at all.
+   */
+  alternates?: Record<string, string> | null;
+  /** OpenGraph page type. */
+  ogType?: 'website' | 'article';
+}
+
+const {
+  title: propTitle,
+  description: propDescription,
+  ogImage,
+  jsonLd,
+  noindex,
+  alternates,
+  ogType = 'website',
+} = Astro.props;
+
+// ── Site constants — replace these ─────────────────────────────────────────
+const SITE_NAME = 'Example';
+const DEFAULT_TITLE = 'Example — Short Descriptive Tagline';
+const DEFAULT_DESCRIPTION =
+  'One sentence stating what this business does, for whom, and where. Written for a human deciding whether to click.';
+const DEFAULT_OG_IMAGE = '/og-default.jpg';
+const LOCALES = ['en', 'de'] as const; // delete for single-language sites
+
+// `site` must be set in astro.config.mjs.
+const origin = Astro.site ?? new URL('https://example.com');
+
+const title = propTitle ?? DEFAULT_TITLE;
+const description = propDescription ?? DEFAULT_DESCRIPTION;
+const canonical = new URL(Astro.url.pathname, origin);
+const ogImg = new URL(ogImage ?? DEFAULT_OG_IMAGE, origin).href;
+
+// Current language from the first path segment.
+const segment = Astro.url.pathname.split('/')[1];
+const lang = (LOCALES as readonly string[]).includes(segment) ? segment : LOCALES[0];
+
+// hreflang: undefined derives, null disables.
+const hreflang =
+  alternates === undefined
+    ? Object.fromEntries(
+        LOCALES.map((l) => [
+          l,
+          new URL(
+            Astro.url.pathname.replace(new RegExp(`^/(${LOCALES.join('|')})`), `/${l}`),
+            origin,
+          ).href,
+        ]),
+      )
+    : alternates;
+---
+
+<!doctype html>
+<html lang={lang} class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <link rel="canonical" href={canonical.href} />
+
+    {hreflang && (
+      <>
+        {Object.entries(hreflang).map(([code, href]) => (
+          <link rel="alternate" hreflang={code} href={href} />
+        ))}
+        <link rel="alternate" hreflang="x-default" href={hreflang[LOCALES[0]]} />
+      </>
+    )}
+
+    <!-- OpenGraph -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImg} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content={lang === 'de' ? 'de_CH' : 'en_US'} />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImg} />
+
+    <!-- Answer-engine discovery: keep public/llm.txt current -->
+    <meta name="ai-instructions" content="/llm.txt" />
+
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+    <!-- Point at your image CDN, or delete -->
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+
+    <!-- Self-hosted, subset and preloaded by Astro -->
+    <Font cssVariable="--font-serif" preload />
+    <Font cssVariable="--font-sans" preload />
+
+    <ClientRouter />
+
+    <!--
+      Critical above-the-fold CSS. Keep under ~1 kB: this exists only to stop a
+      flash before the linked stylesheet lands, not to be a second stylesheet.
+    -->
+    <style is:inline>
+      :root{--bg:#F0EEE9;--ink:#111}
+      :root.dark{--bg:#1C1C1C;--ink:#FFF}
+      html{background-color:var(--bg);color:var(--ink)}
+      body{margin:0;font-family:var(--font-sans),system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+      nav{position:fixed;top:0;left:0;right:0;z-index:100}
+    </style>
+
+    <!-- Theme before first paint: prevents a white flash on every navigation -->
+    <script is:inline>
+      try {
+        const saved = localStorage.getItem('theme');
+        const dark = saved
+          ? saved === 'dark'
+          : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', dark);
+      } catch {}
+    </script>
+
+    <!--
+      Analytics: Plausible is ~1 kB and cookie-free. Uncomment after adding the
+      site in Plausible (see references/07-analytics-and-consoles.md).
+      <script defer data-domain="example.com" src="https://plausible.io/js/script.js"></script>
+    -->
+  </head>
+
+  <body>
+    <Navbar lang={lang} />
+    <main>
+      <slot />
+    </main>
+    <Footer lang={lang} />
+  </body>
+</html>

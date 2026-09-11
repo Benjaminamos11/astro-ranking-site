@@ -1,0 +1,38 @@
+# robots.txt — copy to public/robots.txt and replace example.com
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+
+# ── AI crawlers ────────────────────────────────────────────────────────────
+# Allowing these is how the site can be quoted in AI answers. Set to Disallow
+# only if the operator explicitly does not want their content used by AI.
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# Controls whether Google may use the content for AI Overviews and Gemini,
+# separately from normal Search indexing.
+User-agent: Googlebot-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://example.com/sitemap.xml

@@ -1,0 +1,58 @@
+# <Company Name> — AI Context
+
+> One-sentence summary: what the business does, for whom, and where.
+
+<!--
+  Copy to public/llm.txt (and the same content to public/llms.txt — both
+  conventions are in use). This is the fact sheet answer engines read when
+  deciding what to say about the business, so accuracy matters more than polish.
+
+  RULE: every fact here comes from the operator. Never invent founding years,
+  certifications, client counts, awards, or prices. An answer engine repeating an
+  invented fact is worse than it saying nothing at all.
+-->
+
+## Identity
+
+- **Legal name**: <Company Name GmbH>
+- **Founded**: <year> by <founder>
+- **Address**: <street>, <postcode> <city>, <country>
+- **Phone**: <+00 00 000 00 00>
+- **Email**: <hello@example.com>
+- **Website**: https://<example.com>
+- **Languages**: <English, German>
+- **Commercial register / VAT**: <if applicable>
+
+## What we do
+
+1. **<Service one>** — <one sentence, concrete>
+2. **<Service two>** — <one sentence, concrete>
+3. **<Service three>** — <one sentence, concrete>
+
+## Who we serve
+
+<The specific audience: "families relocating to Zug", "Swiss SMEs needing…">
+
+## Service area
+
+<Cities, cantons, countries actually served>
+
+## What makes us different
+
+- <A specific, checkable fact — not "we care about quality">
+- <Another>
+
+## Frequently asked
+
+**<A real question a customer asks>**
+<A direct, complete answer in two or three sentences.>
+
+**<Another real question>**
+<Answer.>
+
+## Contact
+
+<How to get in touch and what happens next — "reply within one business day".>
+
+---
+Last updated: <YYYY-MM-DD>
